@@ -8,14 +8,14 @@ import { NgOptimizedImage } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 // Elementos de angular Material que se importan en los componentes standalone de la aplicación.
-
-import {MatButtonModule} from '@angular/material/button';
-import {MatDividerModule} from '@angular/material/divider';
-import {MatIconModule} from '@angular/material/icon';
-import {MatCardModule} from '@angular/material/card';
-import {MatRadioModule} from '@angular/material/radio';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatInputModule} from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 
 /* =========================
    ngx-mask (inputs de código)
@@ -46,7 +46,8 @@ export const SHARED_IMPORTS = [
   MatInputModule,
   MatFormFieldModule,
   MatRadioModule,
+  MatDatepickerModule,
   /* ngx-mask */
   NgxMaskDirective,
-  NgxMaskPipe
+  NgxMaskPipe,
 ];

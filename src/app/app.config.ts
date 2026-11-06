@@ -7,15 +7,19 @@ import { provideClientHydration, withEventReplay } from '@angular/platform-brows
 import { HttpClient, provideHttpClient, withFetch } from '@angular/common/http';
 //Agregamos el masking para los inputs de los formularios
 import { provideNgxMask } from 'ngx-mask';
+// Adaptador nativo de fechas para Angular Material Datepicker
+import { provideNativeDateAdapter } from '@angular/material/core';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes), provideClientHydration(withEventReplay()),
+    provideRouter(routes),
+    provideClientHydration(withEventReplay()),
     provideHttpClient(withFetch()),
     // Esta es la nueva forma de injectar el mask para que no le de errores
     // al momento de crear los formularios
     provideNgxMask(),
-  ]
+    provideNativeDateAdapter(),
+  ],
 };

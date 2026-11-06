@@ -75,6 +75,11 @@ export class AdministradoresService {
         error["confirmar_password"] = this.errorService.required;
       }
     }
+    
+    //Validación de que las contraseñas coincidan
+    if (data.password && data.confirmar_password && data.password !== data.confirmar_password) {
+      error['confirmar_password'] = 'Las contraseñas no coinciden';
+    }
 
     if(!this.validatorService.required(data["rfc"])){
       error["rfc"] = this.errorService.required;
