@@ -3,7 +3,9 @@ import { inject, Injectable } from '@angular/core';
 import { AuthService } from './auth-service';
 import { ErrorsService } from './tools/errors-service';
 import { ValidatorService } from './tools/validator-service';
-import { DatosMaestro } from '../interfaces/usuarios.interfaces';
+import { DatosAdministrador, DatosMaestro } from '../interfaces/usuarios.interfaces';
+import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -87,16 +89,18 @@ export class MaestrosService {
     }
 
     if (!editar) {
-      if (!this.validatorService.required(data.password)) {
-        error['password'] = this.errorService.required;
+      if (!this.validatorService.required(data["password"])) {
+        error["password"] = this.errorService.required;
       }
-      if (!this.validatorService.required(data.confirmar_password)) {
-        error['confirmar_password'] = this.errorService.required;
-      }
-    }
 
-    if (data.password && data.confirmar_password && data.password !== data.confirmar_password) {
-      error['confirmar_password'] = 'Las contraseñas no coinciden';
+      if (!this.validatorService.required(data["confirmar_password"])) {
+        error["confirmar_password"] = this.errorService.required;
+      }
+
+      // Validar coincidencia de contraseñas
+      if (data["password"] && data["confirmar_password"] && data["password"] !== data["confirmar_password"]) {
+        error["confirmar_password"] = "Las contraseñas no coinciden";
+      }
     }
 
     if (!this.validatorService.required(data.fecha_nacimiento)) {
@@ -129,4 +133,11 @@ export class MaestrosService {
 
     return error;
   }
+
+  // Método para obtener la lista de maestros desde el backend
+  // Creamos la funcion con la endpoint de la API y el metodo POST para enviar los datos del maestro al backend. Se incluyen los headers de autenticación para asegurar que la solicitud sea válida.
+  public registrarMaestro(data: DatosMaestro): Observable <any> {
+    // Llamada al endpoint de la API para registrar un nuevo maestro
+    return this.http.post<any>(`${environment.url_api}/maestros/`, data, { headers: this.getAuthHeaders() });
+  }  
 }

@@ -4,6 +4,8 @@ import { AuthService } from './auth-service';
 import { ErrorsService } from './tools/errors-service';
 import { ValidatorService } from './tools/validator-service';
 import { DatosAdministrador } from '../interfaces/usuarios.interfaces';
+import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -66,20 +68,21 @@ export class AdministradoresService {
       error['email'] = this.errorService.email;
     }
 
-    if(!editar){
-      if(!this.validatorService.required(data["password"])){
+    if (!editar) {
+      if (!this.validatorService.required(data["password"])) {
         error["password"] = this.errorService.required;
       }
 
-      if(!this.validatorService.required(data["confirmar_password"])){
+      if (!this.validatorService.required(data["confirmar_password"])) {
         error["confirmar_password"] = this.errorService.required;
       }
+
+      // Validar coincidencia de contraseñas
+      if (data["password"] && data["confirmar_password"] && data["password"] !== data["confirmar_password"]) {
+        error["confirmar_password"] = "Las contraseñas no coinciden";
+      }
     }
-    
-    //Validación de que las contraseñas coincidan
-    if (data.password && data.confirmar_password && data.password !== data.confirmar_password) {
-      error['confirmar_password'] = 'Las contraseñas no coinciden';
-    }
+
 
     if(!this.validatorService.required(data["rfc"])){
       error["rfc"] = this.errorService.required;
@@ -107,5 +110,12 @@ export class AdministradoresService {
 
     //Return JSON con los errores encontrados, si no hay errores el JSON estará vacío
     return error;
+  }
+
+  // Método para obtener la lista de administradores desde el backend
+  // Creamos la funcion con la endpoint de la API y el metodo POST para enviar los datos del administrador al backend. Se incluyen los headers de autenticación para asegurar que la solicitud sea válida.
+  public registrarAdmin(data: DatosAdministrador): Observable <any> {
+    // Llamada al endpoint de la API para registrar un nuevo administrador
+    return this.http.post<any>(`${environment.url_api}/admin/`, data, { headers: this.getAuthHeaders() });
   }
 }

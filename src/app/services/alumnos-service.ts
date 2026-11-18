@@ -4,6 +4,8 @@ import { AuthService } from './auth-service';
 import { ErrorsService } from './tools/errors-service';
 import { ValidatorService } from './tools/validator-service';
 import { DatosAlumno } from '../interfaces/usuarios.interfaces';
+import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -65,17 +67,18 @@ export class AlumnosService {
     }
 
     if (!editar) {
-      if (!this.validatorService.required(data.password)) {
-        error['password'] = this.errorService.required;
+      if (!this.validatorService.required(data["password"])) {
+        error["password"] = this.errorService.required;
       }
-      if (!this.validatorService.required(data.confirmar_password)) {
-        error['confirmar_password'] = this.errorService.required;
-      }
-    }
 
-    //validación de que las contraseñas coincidan
-    if (data.password && data.confirmar_password && data.password !== data.confirmar_password) {
-      error['confirmar_password'] = 'Las contraseñas no coinciden';
+      if (!this.validatorService.required(data["confirmar_password"])) {
+        error["confirmar_password"] = this.errorService.required;
+      }
+
+      // Validar coincidencia de contraseñas
+      if (data["password"] && data["confirmar_password"] && data["password"] !== data["confirmar_password"]) {
+        error["confirmar_password"] = "Las contraseñas no coinciden";
+      }
     }
 
     if (!this.validatorService.required(data.fecha_nacimiento)) {
@@ -113,4 +116,10 @@ export class AlumnosService {
 
     return error;
   }
+  // Método para obtener la lista de alumnos desde el backend
+  // Creamos la funcion con la endpoint de la API y el metodo POST para enviar los datos del alumno al backend. Se incluyen los headers de autenticación para asegurar que la solicitud sea válida.
+  public registrarAlumno(data: DatosAlumno): Observable <any> {
+    // Llamada al endpoint de la API para registrar un nuevo alumno
+    return this.http.post<any>(`${environment.url_api}/alumnos/`, data, { headers: this.getAuthHeaders() });
+  }  
 }

@@ -3,6 +3,7 @@ import { Location } from '@angular/common';
 import { SHARED_IMPORTS } from '../../shared/shared.imports';
 import { MaestrosService } from '../../services/maestros-service';
 import { DatosMaestro } from '../../interfaces/usuarios.interfaces';
+import { NotificationService } from '../../services/tools/notification-service';
 
 @Component({
   selector: 'app-registro-maestros',
@@ -19,6 +20,8 @@ export class RegistroMaestros implements OnInit {
   // Inyección de dependencias
   private location = inject(Location);
   public maestrosService = inject(MaestrosService);
+  //Inyectar el servicio de notificaciones para mostrar mensajes al usuario
+  private notificationService = inject(NotificationService);
 
   // Variables para el formulario y control de vista
   public maestro: DatosMaestro = {} as DatosMaestro;
@@ -127,17 +130,32 @@ export class RegistroMaestros implements OnInit {
 
   // Registro del maestro (Validación pura sin redirecciones prematuras ni alertas de login)
   public registrar(): void {
-    this.errors = {};
+    // logica para validar los datos del maestro antes de enviarlos al servicio
     this.errors = this.maestrosService.validarMaestro(this.maestro, this.editar);
+    console.log('Errores de validación:', this.errors);
 
-    console.log('Errores de validación maestro:', this.errors);
+    // Si hay discrepancia de contraseñas o campos inválidos, dar feedback y detener
+    if (this.errors['confirmar_password'] === 'Las contraseñas no coinciden') {
+      this.notificationService.error('Las contraseñas no coinciden');
+    }
 
     if (Object.keys(this.errors).length > 0) {
       return;
     }
 
-    console.log('Datos del maestro válidos listos para enviar:', this.maestro);
-    // TODO: En fases posteriores se conectará con el endpoint del backend HTTP
+    // logica para registrar o actualizar los datos del maestro 
+    this.maestrosService.registrarMaestro(this.maestro).subscribe(
+      (response) => {
+        // Dentro del response se puede obtener el mensaje de éxito o error del backend, dependiendo de la respuesta del servidor. Se puede mostrar un mensaje de éxito al usuario y regresar a la página anterior.
+        console.log('Respuesta del backend:', response);
+        this.notificationService.success('Maestro registrado con éxito');
+        this.regresar();
+      },
+      (error) => {
+        console.error('Error al registrar el maestro:', error);
+        this.notificationService.error('Error al registrar el maestro');
+      }
+    );
   }
 
   // Actualización del maestro

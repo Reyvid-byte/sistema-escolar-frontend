@@ -4,6 +4,7 @@ import { Location } from '@angular/common';
 import { AdministradoresService } from '../../services/administradores-service';
 //Importar la interfaz de datos del administrador
 import { DatosAdministrador } from '../../interfaces/usuarios.interfaces';
+import { NotificationService } from '../../services/tools/notification-service';
 
 @Component({
   selector: 'app-registro-admin',
@@ -21,6 +22,8 @@ export class RegistroAdmin implements OnInit {
   private location = inject(Location);
   //Inyectar el servicio de administradores para poder registrar y actualizar los datos del administrador
   private administradoresService = inject(AdministradoresService);
+  //Inyectar el servicio de notificaciones para mostrar mensajes al usuario
+  private notificationService = inject(NotificationService);
 
 
   //Declarar las variables para el formulario de registro
@@ -67,21 +70,33 @@ export class RegistroAdmin implements OnInit {
     }
   }
 
-  public registrar(){
-    // Lógica para validar si el usuario administrador trae datos o no en los campos del formulario
-    this.errors = {};
+  public registrar(): void {
+    // logica para validar los datos del administrador antes de enviarlos al servicio
     this.errors = this.administradoresService.validarAdmin(this.admin, this.editar);
-
     console.log('Errores de validación:', this.errors);
 
-    // Si hay errores de validación, no se procede con el registro o actualización
+    // Si hay discrepancia de contraseñas o campos inválidos, dar feedback y detener
+    if (this.errors['confirmar_password'] === 'Las contraseñas no coinciden') {
+      this.notificationService.error('Las contraseñas no coinciden');
+    }
+
     if (Object.keys(this.errors).length > 0) {
       return;
     }
 
-    //Lógica para registrar o actualizar los datos del administrador
-    // TODO: Aquí se debe implementar la lógica para registrar o actualizar los datos del administrador en el backend, utilizando el servicio de administradores.
-
+    // logica para registrar o actualizar los datos del administrador 
+    this.administradoresService.registrarAdmin(this.admin).subscribe(
+      (response) => {
+        // Dentro del response se puede obtener el mensaje de éxito o error del backend, dependiendo de la respuesta del servidor. Se puede mostrar un mensaje de éxito al usuario y regresar a la página anterior.
+        console.log('Respuesta del backend:', response);
+        this.notificationService.success('Administrador registrado con éxito');
+        this.regresar();
+      },
+      (error) => {
+        console.error('Error al registrar el administrador:', error);
+        this.notificationService.error('Error al registrar el administrador');
+      }
+    );
   }
 
   public actualizar(){

@@ -3,6 +3,7 @@ import { Location } from '@angular/common';
 import { SHARED_IMPORTS } from '../../shared/shared.imports';
 import { AlumnosService } from '../../services/alumnos-service';
 import { DatosAlumno } from '../../interfaces/usuarios.interfaces';
+import { NotificationService } from '../../services/tools/notification-service';
 
 @Component({
   selector: 'app-registro-alumnos',
@@ -19,6 +20,8 @@ export class RegistroAlumnos implements OnInit {
   // Inyección de dependencias
   private location = inject(Location);
   private alumnosService = inject(AlumnosService);
+  //Inyectar el servicio de notificaciones para mostrar mensajes al usuario
+  private notificationService = inject(NotificationService);
 
   // Variables para el formulario
   public alumno: DatosAlumno = {} as DatosAlumno;
@@ -101,21 +104,34 @@ export class RegistroAlumnos implements OnInit {
 
   // Registro del alumno (Validación pura sin redirecciones prematuras ni alertas de login)
   public registrar(): void {
-    this.errors = {};
+    // logica para validar los datos del alumno antes de enviarlos al servicio
     this.errors = this.alumnosService.validarAlumno(this.alumno, this.editar);
+    console.log('Errores de validación:', this.errors);
 
-    console.log('Errores de validación alumno:', this.errors);
+    // Si hay discrepancia de contraseñas o campos inválidos, dar feedback y detener
+    if (this.errors['confirmar_password'] === 'Las contraseñas no coinciden') {
+      this.notificationService.error('Las contraseñas no coinciden');
+    }
 
-    // Si existen errores, se detiene el proceso
     if (Object.keys(this.errors).length > 0) {
       return;
     }
 
-    console.log('Datos del alumno válidos listos para enviar:', this.alumno);
-    // TODO: En fases posteriores se conectará con el endpoint del backend HTTP
+    // logica para registrar o actualizar los datos del alumno
+    this.alumnosService.registrarAlumno(this.alumno).subscribe(
+      (response) => {
+        // Dentro del response se puede obtener el mensaje de éxito o error del backend, dependiendo de la respuesta del servidor. Se puede mostrar un mensaje de éxito al usuario y regresar a la página anterior.
+        console.log('Respuesta del backend:', response);
+        this.notificationService.success('Alumno registrado con éxito');
+        this.regresar();
+      },
+      (error) => {
+        console.error('Error al registrar el alumno:', error);
+        this.notificationService.error('Error al registrar el alumno');
+      }
+    );
   }
 
-  // Actualización del alumno
   public actualizar(): void {
     this.errors = {};
     this.errors = this.alumnosService.validarAlumno(this.alumno, this.editar);
